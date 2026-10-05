@@ -1,15 +1,32 @@
 import { useMemo, useState } from 'react'
+import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
 import { SearchForm } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TimeClassTabs } from './components/TimeClassTabs'
+import { ViewTabs } from './components/ViewTabs'
 import { useGames } from './hooks/useGames'
 import { filterGames, sinceDate, type TimeClass } from './lib/games'
+
+type View = 'dashboard' | 'games'
+
+const VIEWS = [
+  { value: 'dashboard', label: 'Tableau de bord' },
+  { value: 'games', label: 'Parties' },
+] as const
+
+const TIME_CLASS_LABEL: Record<TimeClass, string> = {
+  rapid: 'Rapid',
+  blitz: 'Blitz',
+  daily: 'Daily',
+  bullet: 'Bullet',
+}
 
 export default function App() {
   const { state, load } = useGames()
   const [timeClass, setTimeClass] = useState<TimeClass>('rapid')
   const [since, setSince] = useState<Date | undefined>()
+  const [view, setView] = useState<View>('dashboard')
 
   function handleSearch(username: string, periodDays: number | null) {
     const date = sinceDate(periodDays)
@@ -30,7 +47,7 @@ export default function App() {
   }, [allGames, since])
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 px-4 py-6">
+    <div className="mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-6">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-semibold tracking-tight">
           L’<span className="text-accent">Architecte</span>
@@ -63,7 +80,11 @@ export default function App() {
               <h2 className="font-medium">{state.username}</h2>
               <TimeClassTabs value={timeClass} counts={counts} onChange={setTimeClass} />
             </div>
-            <GameList games={games} />
+            <ViewTabs tabs={VIEWS} value={view} onChange={setView} />
+            {view === 'dashboard' && (
+              <Dashboard games={games} timeClassLabel={TIME_CLASS_LABEL[timeClass]} />
+            )}
+            {view === 'games' && <GameList games={games} />}
           </section>
         )}
       </main>

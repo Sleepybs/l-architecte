@@ -17,7 +17,7 @@ Rien à installer, pas de compte, pas de serveur : tout se passe dans ton naviga
 ## État d’avancement
 
 - [x] Récupération des parties (API publique chess.com, filtres cadence et période)
-- [ ] Tableau de bord (courbe d’elo, % de victoires, ouvertures, types de défaites)
+- [x] Tableau de bord (courbe d’elo, % de victoires, ouvertures, types de défaites)
 - [ ] Indicateurs « palier » (roque, sortie de la dame)
 - [ ] Bouton « Analyser sur lichess »
 - [ ] Cache local (IndexedDB) et bouton « Effacer mes données »

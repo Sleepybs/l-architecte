@@ -14,6 +14,8 @@
   --color-accent: #b45309;
   --color-win: #15803d;
   --color-loss: #b91c1c;
+  --color-draw: #94a3b8;
+  --color-series-1: #2a78d6;
 }
 
 @layer base {
@@ -25,8 +27,10 @@
     --color-muted: #94a3b8;
     --color-line: #1f2937;
     --color-accent: #fbbf24;
-    --color-win: #4ade80;
-    --color-loss: #f87171;
+    --color-win: #16a34a;
+    --color-loss: #ef4444;
+    --color-draw: #64748b;
+    --color-series-1: #3987e5;
   }
   html {
     color-scheme: light;
