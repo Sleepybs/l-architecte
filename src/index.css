@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+/* Le mode sombre suit la classe .dark posée sur <html> (bouton de thème). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Couleurs définies une fois, réutilisées partout (bg-surface, text-muted…). */
+@theme {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-2: #e2e8f0;
+  --color-fg: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-accent: #b45309;
+  --color-win: #15803d;
+  --color-loss: #b91c1c;
+}
+
+@layer base {
+  .dark {
+    --color-bg: #0b1120;
+    --color-surface: #111827;
+    --color-surface-2: #1f2937;
+    --color-fg: #e5e7eb;
+    --color-muted: #94a3b8;
+    --color-line: #1f2937;
+    --color-accent: #fbbf24;
+    --color-win: #4ade80;
+    --color-loss: #f87171;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-bg text-fg antialiased;
+  }
+}
+
+@layer components {
+  .field {
+    @apply rounded-lg border border-line bg-surface px-3 py-2 text-fg outline-none focus:border-accent;
+  }
+  .btn-primary {
+    @apply rounded-lg bg-accent px-4 py-2 font-medium text-bg hover:opacity-90 disabled:cursor-wait disabled:opacity-60;
+  }
+}
