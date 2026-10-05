@@ -5,22 +5,25 @@ import { ClearDataButton } from './components/ClearDataButton'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
 import { LoadingStatus } from './components/LoadingStatus'
+import { PuzzlesView } from './components/puzzles/PuzzlesView'
 import { SearchForm, type Search } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TimeClassTabs } from './components/TimeClassTabs'
 import { ViewTabs } from './components/ViewTabs'
 import { useAnalyses } from './hooks/useAnalyses'
 import { useGames } from './hooks/useGames'
+import { usePuzzleResults } from './hooks/usePuzzleResults'
 import { dbGet, dbPut } from './lib/db'
 import { filterGames, PERIODS, sinceDate, type TimeClass } from './lib/games'
 import { normalizeUsername } from './lib/username'
 
-type View = 'dashboard' | 'games' | 'analysis'
+type View = 'dashboard' | 'games' | 'analysis' | 'puzzles'
 
 const VIEWS = [
   { value: 'dashboard', label: 'Tableau de bord' },
   { value: 'games', label: 'Parties' },
   { value: 'analysis', label: 'Analyse' },
+  { value: 'puzzles', label: 'Puzzles' },
 ] as const
 
 const TIME_CLASS_LABEL: Record<TimeClass, string> = {
@@ -42,7 +45,9 @@ async function readLastSearch(): Promise<Search | undefined> {
 
 export default function App() {
   const { state, load, reset } = useGames()
-  const engine = useAnalyses(state.status === 'done' ? state.username : null)
+  const username = state.status === 'done' ? state.username : null
+  const engine = useAnalyses(username)
+  const puzzles = usePuzzleResults(username)
   const [timeClass, setTimeClass] = useState<TimeClass>('rapid')
   const [since, setSince] = useState<Date | undefined>()
   const [view, setView] = useState<View>('dashboard')
@@ -160,6 +165,16 @@ export default function App() {
                 run={engine.run}
                 onAnalyze={(list, depth) => void engine.analyze(list, depth)}
                 onStop={engine.stop}
+              />
+            )}
+            {view === 'puzzles' && (
+              <PuzzlesView
+                key={timeClass} // repart du premier puzzle quand la cadence change
+                games={games}
+                analyses={engine.analyses}
+                results={puzzles.results}
+                onResult={puzzles.record}
+                onGoToAnalysis={() => setView('analysis')}
               />
             )}
           </section>
