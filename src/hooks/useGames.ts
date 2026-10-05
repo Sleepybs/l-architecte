@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChessComError, fetchGames } from '../lib/chesscom'
-import { toGame, type Game } from '../lib/games'
+import { toGames, type Game } from '../lib/games'
+
+export type LoadPhase = 'download' | 'analyse'
 
 export type LoadState =
   | { status: 'idle' }
-  | { status: 'loading'; done: number; total: number; waitMs: number | null }
+  | { status: 'loading'; phase: LoadPhase; done: number; total: number; waitMs: number | null }
   | { status: 'done'; username: string; games: Game[] }
   | { status: 'error'; message: string }
 
@@ -20,17 +22,20 @@ export function useGames() {
     controller.current?.abort()
     const ctrl = new AbortController()
     controller.current = ctrl
+    const progress = (phase: LoadPhase) => (done: number, total: number) => {
+      if (!ctrl.signal.aborted) setState({ status: 'loading', phase, done, total, waitMs: null })
+    }
 
-    setState({ status: 'loading', done: 0, total: 0, waitMs: null })
+    progress('download')(0, 0)
     try {
       const raw = await fetchGames(username, {
         since,
         signal: ctrl.signal,
-        onProgress: (done, total) => setState({ status: 'loading', done, total, waitMs: null }),
+        onProgress: progress('download'),
         onRateLimit: (waitMs) => setState((s) => (s.status === 'loading' ? { ...s, waitMs } : s)),
       })
-      const games = raw.map((g) => toGame(g, username)).filter((g): g is Game => g !== null)
-      setState({ status: 'done', username, games })
+      const games = await toGames(raw, username, progress('analyse'))
+      if (!ctrl.signal.aborted) setState({ status: 'done', username, games })
     } catch (err) {
       if (ctrl.signal.aborted) return
       const message =

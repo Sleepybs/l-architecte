@@ -1,5 +1,6 @@
 // Transforme les parties brutes de l'API en un modèle simple, vu du côté du joueur.
 import type { ChessComGame } from './chesscom'
+import { earlyMoves, type EarlyMoves } from './indicators'
 
 export type TimeClass = 'rapid' | 'blitz' | 'daily' | 'bullet'
 export type Color = 'white' | 'black'
@@ -21,6 +22,8 @@ export interface Game {
   result: string
   eco: string | null
   opening: string | null
+  /** Roque et sortie de dame dans les 10 premiers coups (null si le PGN est illisible). */
+  early: EarlyMoves | null
 }
 
 // Codes de résultat chess.com qui signifient « nulle ».
@@ -89,7 +92,30 @@ export function toGame(raw: ChessComGame, username: string): Game | null {
     result: mine.result,
     eco: pgnTag(pgn, 'ECO'),
     opening: openingFromUrl(pgnTag(pgn, 'ECOUrl') ?? raw.eco),
+    early: pgn ? earlyMoves(pgn, color) : null,
   }
+}
+
+/**
+ * Convertit beaucoup de parties sans figer l'interface : on rend la main
+ * au navigateur tous les `chunk` éléments (le rejeu chess.js coûte ~1 ms par partie).
+ */
+export async function toGames(
+  raws: readonly ChessComGame[],
+  username: string,
+  onProgress?: (done: number, total: number) => void,
+  chunk = 150,
+): Promise<Game[]> {
+  const out: Game[] = []
+  for (let i = 0; i < raws.length; i += chunk) {
+    for (const raw of raws.slice(i, i + chunk)) {
+      const g = toGame(raw, username)
+      if (g) out.push(g)
+    }
+    onProgress?.(Math.min(i + chunk, raws.length), raws.length)
+    await new Promise((r) => setTimeout(r, 0))
+  }
+  return out
 }
 
 export interface GameFilter {

@@ -30,6 +30,7 @@ function game(overrides: Partial<Game> = {}): Game {
     result: 'win',
     eco: null,
     opening: 'Sicilian Defense Open 2...Nc6',
+    early: null,
     ...overrides,
   }
 }

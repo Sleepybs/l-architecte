@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
+import { LoadingStatus } from './components/LoadingStatus'
 import { SearchForm } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TimeClassTabs } from './components/TimeClassTabs'
@@ -58,15 +59,7 @@ export default function App() {
       <main className="flex flex-1 flex-col gap-6">
         <SearchForm loading={state.status === 'loading'} onSubmit={handleSearch} />
 
-        {state.status === 'loading' && (
-          <p className="text-sm text-muted" aria-live="polite">
-            {state.waitMs !== null
-              ? `chess.com demande de ralentir : nouvelle tentative dans ${Math.round(state.waitMs / 1000)} s…`
-              : state.total === 0
-                ? 'Recherche des archives…'
-                : `Téléchargement des archives mensuelles : ${state.done} / ${state.total}`}
-          </p>
-        )}
+        {state.status === 'loading' && <LoadingStatus state={state} />}
 
         {state.status === 'error' && (
           <p role="alert" className="rounded-lg border border-loss/40 px-4 py-3 text-sm text-loss">

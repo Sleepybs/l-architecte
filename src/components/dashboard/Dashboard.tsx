@@ -10,6 +10,7 @@ import {
 } from '../../lib/stats'
 import { Card } from '../Card'
 import { ColorRecord } from './ColorRecord'
+import { Indicators } from './Indicators'
 import { LossBreakdown } from './LossBreakdown'
 import { OpeningTable } from './OpeningTable'
 import { RatingChart } from './RatingChart'
@@ -45,6 +46,7 @@ export function Dashboard({
       <Card title={`Courbe d’elo ${timeClassLabel}`} subtitle="Parties classées uniquement">
         <RatingChart series={stats.series} />
       </Card>
+      <Indicators games={games} />
       <div className="grid gap-4 md:grid-cols-2">
         <ColorRecord byColor={stats.byColor} />
         <LossBreakdown data={stats.losses} />
