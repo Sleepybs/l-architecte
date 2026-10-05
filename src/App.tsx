@@ -1,13 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ClearDataButton } from './components/ClearDataButton'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
 import { LoadingStatus } from './components/LoadingStatus'
-import { SearchForm } from './components/SearchForm'
+import { SearchForm, type Search } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TimeClassTabs } from './components/TimeClassTabs'
 import { ViewTabs } from './components/ViewTabs'
 import { useGames } from './hooks/useGames'
-import { filterGames, sinceDate, type TimeClass } from './lib/games'
+import { dbGet, dbPut } from './lib/db'
+import { filterGames, PERIODS, sinceDate, type TimeClass } from './lib/games'
+import { normalizeUsername } from './lib/username'
 
 type View = 'dashboard' | 'games'
 
@@ -23,16 +26,52 @@ const TIME_CLASS_LABEL: Record<TimeClass, string> = {
   bullet: 'Bullet',
 }
 
+const LAST_SEARCH_KEY = 'meta|lastSearch'
+
+/** Relit la dernière recherche en la revalidant (une donnée stockée n'est jamais crue sur parole). */
+async function readLastSearch(): Promise<Search | undefined> {
+  const s = await dbGet<Search>('kv', LAST_SEARCH_KEY).catch(() => undefined)
+  const username = s && normalizeUsername(String(s.username))
+  if (!s || !username || !PERIODS[s.periodIndex]) return undefined
+  return { username, periodIndex: s.periodIndex }
+}
+
 export default function App() {
-  const { state, load } = useGames()
+  const { state, load, reset } = useGames()
   const [timeClass, setTimeClass] = useState<TimeClass>('rapid')
   const [since, setSince] = useState<Date | undefined>()
   const [view, setView] = useState<View>('dashboard')
+  // undefined = pas encore lu ; null = aucune recherche mémorisée.
+  const [initial, setInitial] = useState<Search | null | undefined>(undefined)
+  const [formKey, setFormKey] = useState(0)
 
-  function handleSearch(username: string, periodDays: number | null) {
-    const date = sinceDate(periodDays)
-    setSince(date)
-    void load(username, date)
+  const search = useCallback(
+    (s: Search) => {
+      const date = sinceDate(PERIODS[s.periodIndex]?.days ?? null)
+      setSince(date)
+      void dbPut('kv', LAST_SEARCH_KEY, s).catch(() => undefined)
+      void load(s.username, date)
+    },
+    [load],
+  )
+
+  // Au démarrage : on relance la dernière recherche (rapide grâce au cache).
+  useEffect(() => {
+    let alive = true
+    void readLastSearch().then((s) => {
+      if (!alive) return
+      setInitial(s ?? null)
+      if (s) search(s)
+    })
+    return () => {
+      alive = false
+    }
+  }, [search])
+
+  function handleCleared() {
+    reset()
+    setInitial(null)
+    setFormKey((k) => k + 1) // remonte le formulaire vide
   }
 
   const allGames = useMemo(() => (state.status === 'done' ? state.games : []), [state])
@@ -57,7 +96,21 @@ export default function App() {
       </header>
 
       <main className="flex flex-1 flex-col gap-6">
-        <SearchForm loading={state.status === 'loading'} onSubmit={handleSearch} />
+        {initial !== undefined && (
+          <SearchForm
+            key={formKey}
+            initial={initial ?? undefined}
+            loading={state.status === 'loading'}
+            onSubmit={search}
+          />
+        )}
+
+        {state.status === 'idle' && initial === null && (
+          <p className="text-sm text-muted">
+            Entre ton pseudo chess.com pour analyser tes parties publiques. Rien à installer, pas de
+            compte : tout reste dans ton navigateur.
+          </p>
+        )}
 
         {state.status === 'loading' && <LoadingStatus state={state} />}
 
@@ -69,6 +122,14 @@ export default function App() {
 
         {state.status === 'done' && (
           <section className="flex flex-col gap-4">
+            {state.offline && (
+              <p
+                role="status"
+                className="rounded-lg border border-line px-4 py-3 text-sm text-muted"
+              >
+                chess.com est injoignable : affichage des parties en cache.
+              </p>
+            )}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-medium">{state.username}</h2>
               <TimeClassTabs value={timeClass} counts={counts} onChange={setTimeClass} />
@@ -82,8 +143,11 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t border-line pt-4 text-xs text-muted">
-        Projet non affilié à Chess.com ni à Lichess. Logiciel libre sous licence GPL-3.0.
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-xs text-muted">
+        <span>
+          Projet non affilié à Chess.com ni à Lichess. Logiciel libre sous licence GPL-3.0.
+        </span>
+        <ClearDataButton onCleared={handleCleared} />
       </footer>
     </div>
   )

@@ -20,7 +20,7 @@ Rien à installer, pas de compte, pas de serveur : tout se passe dans ton naviga
 - [x] Tableau de bord (courbe d’elo, % de victoires, ouvertures, types de défaites)
 - [x] Indicateurs « palier » (roque, sortie de la dame)
 - [x] Bouton « Analyser sur lichess »
-- [ ] Cache local (IndexedDB) et bouton « Effacer mes données »
+- [x] Cache local (IndexedDB) et bouton « Effacer mes données »
 
 ## Développement
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Game } from '../lib/games'
 import { importToLichess, LichessError, lichessUrl } from '../lib/lichess'
 import { lichessIds } from '../lib/lichessIds'
@@ -8,6 +8,16 @@ type State = { status: 'idle' } | { status: 'loading' } | { status: 'error'; mes
 export function LichessButton({ game }: { game: Game }) {
   const [state, setState] = useState<State>({ status: 'idle' })
   const [id, setId] = useState<string | null>(() => lichessIds.peek(game.id))
+
+  // Au premier affichage, on regarde si la partie a déjà été importée (cache IndexedDB).
+  useEffect(() => {
+    if (id) return
+    let alive = true
+    void lichessIds.get(game.id).then((stored) => alive && stored && setId(stored))
+    return () => {
+      alive = false
+    }
+  }, [game.id, id])
 
   async function handleClick() {
     if (id) {

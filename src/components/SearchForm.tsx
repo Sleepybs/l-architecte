@@ -2,14 +2,20 @@ import { useState, type FormEvent } from 'react'
 import { PERIODS } from '../lib/games'
 import { normalizeUsername } from '../lib/username'
 
-interface Props {
-  loading: boolean
-  onSubmit: (username: string, periodDays: number | null) => void
+export interface Search {
+  username: string
+  periodIndex: number
 }
 
-export function SearchForm({ loading, onSubmit }: Props) {
-  const [username, setUsername] = useState('')
-  const [periodIndex, setPeriodIndex] = useState(2)
+interface Props {
+  loading: boolean
+  initial?: Search
+  onSubmit: (search: Search) => void
+}
+
+export function SearchForm({ loading, initial, onSubmit }: Props) {
+  const [username, setUsername] = useState(initial?.username ?? '')
+  const [periodIndex, setPeriodIndex] = useState(initial?.periodIndex ?? 2)
   const [error, setError] = useState<string | null>(null)
 
   function handleSubmit(e: FormEvent) {
@@ -20,7 +26,7 @@ export function SearchForm({ loading, onSubmit }: Props) {
       return
     }
     setError(null)
-    onSubmit(clean, PERIODS[periodIndex]?.days ?? null)
+    onSubmit({ username: clean, periodIndex })
   }
 
   return (

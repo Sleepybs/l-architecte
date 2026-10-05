@@ -143,29 +143,3 @@ export async function fetchMonth(
   if (!Array.isArray(games)) throw new ChessComError('invalid-data', 'Archive mensuelle invalide.')
   return games as ChessComGame[]
 }
-
-export interface FetchGamesOptions extends FetchOptions {
-  /** Ne télécharge que les mois à partir de cette date (incluse). Absent = tout l'historique. */
-  since?: Date
-  onProgress?: (done: number, total: number) => void
-}
-
-/** Télécharge toutes les parties d'un joueur, un mois après l'autre (jamais en parallèle). */
-export async function fetchGames(
-  username: string,
-  opts: FetchGamesOptions = {},
-): Promise<ChessComGame[]> {
-  let archives = await fetchArchiveList(username, opts)
-  if (opts.since) {
-    const minKey = opts.since.getUTCFullYear() * 100 + opts.since.getUTCMonth() + 1
-    archives = archives.filter((u) => archiveMonthKey(u) >= minKey)
-  }
-
-  const all: ChessComGame[] = []
-  opts.onProgress?.(0, archives.length)
-  for (const [i, url] of archives.entries()) {
-    all.push(...(await fetchMonth(url, opts)))
-    opts.onProgress?.(i + 1, archives.length)
-  }
-  return all
-}

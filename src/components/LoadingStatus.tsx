@@ -6,9 +6,9 @@ function message(s: Loading): string {
   if (s.waitMs !== null) {
     return `chess.com demande de ralentir : nouvelle tentative dans ${Math.round(s.waitMs / 1000)} s…`
   }
-  if (s.phase === 'analyse') return `Analyse des débuts de partie : ${s.done} / ${s.total}`
   if (s.total === 0) return 'Recherche des archives…'
-  return `Téléchargement des archives mensuelles : ${s.done} / ${s.total}`
+  const cache = s.fromCache > 0 ? ` (${s.fromCache} depuis le cache)` : ''
+  return `Archives mensuelles : ${s.done} / ${s.total}${cache}`
 }
 
 export function LoadingStatus({ state }: { state: Loading }) {
