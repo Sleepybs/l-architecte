@@ -2,3 +2,4 @@ dist
 coverage
 LICENSE
 package-lock.json
+public/engine

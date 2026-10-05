@@ -8,6 +8,7 @@ import { defineConfig, type Plugin } from 'vite'
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
+  "worker-src 'self'", // Stockfish tourne dans un Web Worker servi par le site lui-même
   "style-src 'self'",
   "img-src 'self' data:",
   "font-src 'self'",

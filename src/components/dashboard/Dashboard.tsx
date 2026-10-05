@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import type { GameAnalysis } from '../../lib/analysis'
+import { engineSummary } from '../../lib/engineStats'
 import type { Game } from '../../lib/games'
 import {
   lossBreakdown,
@@ -16,13 +18,13 @@ import { OpeningTable } from './OpeningTable'
 import { RatingChart } from './RatingChart'
 import { StatTiles } from './StatTiles'
 
-export function Dashboard({
-  games,
-  timeClassLabel,
-}: {
+interface Props {
   games: readonly Game[]
   timeClassLabel: string
-}) {
+  analyses: ReadonlyMap<string, GameAnalysis>
+}
+
+export function Dashboard({ games, timeClassLabel, analyses }: Props) {
   // useMemo : on ne recalcule les stats que si la liste de parties change.
   const stats = useMemo(() => {
     const series = ratingSeries(games)
@@ -35,6 +37,7 @@ export function Dashboard({
       losses: lossBreakdown(games),
     }
   }, [games])
+  const engine = useMemo(() => engineSummary(games, analyses), [games, analyses])
 
   if (games.length === 0) {
     return <p className="text-muted">Aucune partie pour cette cadence sur la période.</p>
@@ -46,7 +49,25 @@ export function Dashboard({
       <Card title={`Courbe d’elo ${timeClassLabel}`} subtitle="Parties classées uniquement">
         <RatingChart series={stats.series} />
       </Card>
-      <Indicators games={games} />
+      <Indicators
+        games={games}
+        engineSlot={
+          engine.analyzed > 0 && (
+            <>
+              <span className="text-2xl font-semibold tabular-nums">{engine.piecesLostRate} %</span>
+              <div className="h-2 overflow-hidden rounded bg-surface-2">
+                <div
+                  className="h-full rounded bg-series-1"
+                  style={{ width: `${engine.piecesLostRate}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted">
+                des {engine.analyzed} parties analysées · objectif : le plus bas possible
+              </p>
+            </>
+          )
+        }
+      />
       <div className="grid gap-4 md:grid-cols-2">
         <ColorRecord byColor={stats.byColor} />
         <LossBreakdown data={stats.losses} />

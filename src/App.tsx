@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AnalysisView } from './components/analysis/AnalysisView'
+import { BlunderBadge } from './components/analysis/BlunderBadge'
 import { ClearDataButton } from './components/ClearDataButton'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
@@ -7,16 +9,18 @@ import { SearchForm, type Search } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TimeClassTabs } from './components/TimeClassTabs'
 import { ViewTabs } from './components/ViewTabs'
+import { useAnalyses } from './hooks/useAnalyses'
 import { useGames } from './hooks/useGames'
 import { dbGet, dbPut } from './lib/db'
 import { filterGames, PERIODS, sinceDate, type TimeClass } from './lib/games'
 import { normalizeUsername } from './lib/username'
 
-type View = 'dashboard' | 'games'
+type View = 'dashboard' | 'games' | 'analysis'
 
 const VIEWS = [
   { value: 'dashboard', label: 'Tableau de bord' },
   { value: 'games', label: 'Parties' },
+  { value: 'analysis', label: 'Analyse' },
 ] as const
 
 const TIME_CLASS_LABEL: Record<TimeClass, string> = {
@@ -38,6 +42,7 @@ async function readLastSearch(): Promise<Search | undefined> {
 
 export default function App() {
   const { state, load, reset } = useGames()
+  const engine = useAnalyses(state.status === 'done' ? state.username : null)
   const [timeClass, setTimeClass] = useState<TimeClass>('rapid')
   const [since, setSince] = useState<Date | undefined>()
   const [view, setView] = useState<View>('dashboard')
@@ -136,9 +141,27 @@ export default function App() {
             </div>
             <ViewTabs tabs={VIEWS} value={view} onChange={setView} />
             {view === 'dashboard' && (
-              <Dashboard games={games} timeClassLabel={TIME_CLASS_LABEL[timeClass]} />
+              <Dashboard
+                games={games}
+                timeClassLabel={TIME_CLASS_LABEL[timeClass]}
+                analyses={engine.analyses}
+              />
             )}
-            {view === 'games' && <GameList games={games} />}
+            {view === 'games' && (
+              <GameList
+                games={games}
+                renderExtra={(g) => <BlunderBadge game={g} analysis={engine.analyses.get(g.id)} />}
+              />
+            )}
+            {view === 'analysis' && (
+              <AnalysisView
+                games={games}
+                analyses={engine.analyses}
+                run={engine.run}
+                onAnalyze={(list, depth) => void engine.analyze(list, depth)}
+                onStop={engine.stop}
+              />
+            )}
           </section>
         )}
       </main>
