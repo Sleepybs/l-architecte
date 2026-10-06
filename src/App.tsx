@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AnalysisView } from './components/analysis/AnalysisView'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { BlunderBadge } from './components/analysis/BlunderBadge'
 import { ClearDataButton } from './components/ClearDataButton'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
 import { LoadingStatus } from './components/LoadingStatus'
-import { ProgressView } from './components/progress/ProgressView'
-import { PuzzlesView } from './components/puzzles/PuzzlesView'
 import { SearchForm, type Search } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TimeClassTabs } from './components/TimeClassTabs'
@@ -17,6 +14,18 @@ import { usePuzzleResults } from './hooks/usePuzzleResults'
 import { dbGet, dbPut } from './lib/db'
 import { filterGames, PERIODS, sinceDate, type TimeClass } from './lib/games'
 import { normalizeUsername } from './lib/username'
+
+// Onglets chargés à la demande : leur code (échiquier, glisser-déposer…) n'est téléchargé
+// qu'à la première ouverture, ce qui allège le chargement initial de la page.
+const AnalysisView = lazy(() =>
+  import('./components/analysis/AnalysisView').then((m) => ({ default: m.AnalysisView })),
+)
+const PuzzlesView = lazy(() =>
+  import('./components/puzzles/PuzzlesView').then((m) => ({ default: m.PuzzlesView })),
+)
+const ProgressView = lazy(() =>
+  import('./components/progress/ProgressView').then((m) => ({ default: m.ProgressView })),
+)
 
 type View = 'dashboard' | 'games' | 'analysis' | 'puzzles' | 'progress'
 
@@ -160,34 +169,36 @@ export default function App() {
                 renderExtra={(g) => <BlunderBadge game={g} analysis={engine.analyses.get(g.id)} />}
               />
             )}
-            {view === 'analysis' && (
-              <AnalysisView
-                games={games}
-                analyses={engine.analyses}
-                run={engine.run}
-                onAnalyze={(list, depth) => void engine.analyze(list, depth)}
-                onStop={engine.stop}
-              />
-            )}
-            {view === 'puzzles' && (
-              <PuzzlesView
-                key={timeClass} // repart du premier puzzle quand la cadence change
-                games={games}
-                analyses={engine.analyses}
-                results={puzzles.results}
-                onResult={puzzles.record}
-                onGoToAnalysis={() => setView('analysis')}
-              />
-            )}
-            {view === 'progress' && (
-              <ProgressView
-                username={state.username}
-                timeClass={timeClass}
-                games={games}
-                analyses={engine.analyses}
-                puzzles={puzzles.results}
-              />
-            )}
+            <Suspense fallback={<p className="text-sm text-muted">Chargement…</p>}>
+              {view === 'analysis' && (
+                <AnalysisView
+                  games={games}
+                  analyses={engine.analyses}
+                  run={engine.run}
+                  onAnalyze={(list, depth) => void engine.analyze(list, depth)}
+                  onStop={engine.stop}
+                />
+              )}
+              {view === 'puzzles' && (
+                <PuzzlesView
+                  key={timeClass} // repart du premier puzzle quand la cadence change
+                  games={games}
+                  analyses={engine.analyses}
+                  results={puzzles.results}
+                  onResult={puzzles.record}
+                  onGoToAnalysis={() => setView('analysis')}
+                />
+              )}
+              {view === 'progress' && (
+                <ProgressView
+                  username={state.username}
+                  timeClass={timeClass}
+                  games={games}
+                  analyses={engine.analyses}
+                  puzzles={puzzles.results}
+                />
+              )}
+            </Suspense>
           </section>
         )}
       </main>

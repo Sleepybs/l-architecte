@@ -37,6 +37,20 @@ export default defineConfig({
   // Chemins relatifs : l'app fonctionne quel que soit le nom du dépôt GitHub Pages.
   base: './',
   plugins: [react(), tailwindcss(), cspPlugin()],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Les bibliothèques changent rarement : dans des fichiers à part, le navigateur
+        // les garde en cache même quand le code de l'app est mis à jour.
+        codeSplitting: {
+          groups: [
+            { name: 'charts', test: /node_modules[\\/](recharts|d3-|victory-vendor)/ },
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   test: {
     environment: 'node',
   },
