@@ -7,7 +7,7 @@ récupère tes parties publiques et te montre **ce qui t’empêche de progresse
 
 Rien à installer, pas de compte, pas de serveur : tout se passe dans ton navigateur.
 
-**Démo :** `https://<ton-pseudo-github>.github.io/l-architecte/` _(voir « Déploiement »)_
+**Démo :** https://sleepybs.github.io/l-architecte/
 
 ![Tableau de bord](docs/tableau-de-bord.jpg)
 
@@ -121,7 +121,7 @@ Architecture : la logique est dans `src/lib/` (fonctions pures, testées), l’�
 app fetches your public games and shows **what keeps you from improving**. Built for players aiming
 at 2000+. Nothing to install, no account, no server — everything runs in your browser.
 
-**Demo:** `https://<your-github-username>.github.io/l-architecte/`
+**Demo:** https://sleepybs.github.io/l-architecte/
 
 ### Features
 
