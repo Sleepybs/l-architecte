@@ -5,6 +5,7 @@ import { ClearDataButton } from './components/ClearDataButton'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
 import { LoadingStatus } from './components/LoadingStatus'
+import { ProgressView } from './components/progress/ProgressView'
 import { PuzzlesView } from './components/puzzles/PuzzlesView'
 import { SearchForm, type Search } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
@@ -17,13 +18,14 @@ import { dbGet, dbPut } from './lib/db'
 import { filterGames, PERIODS, sinceDate, type TimeClass } from './lib/games'
 import { normalizeUsername } from './lib/username'
 
-type View = 'dashboard' | 'games' | 'analysis' | 'puzzles'
+type View = 'dashboard' | 'games' | 'analysis' | 'puzzles' | 'progress'
 
 const VIEWS = [
   { value: 'dashboard', label: 'Tableau de bord' },
   { value: 'games', label: 'Parties' },
   { value: 'analysis', label: 'Analyse' },
   { value: 'puzzles', label: 'Puzzles' },
+  { value: 'progress', label: 'Progression' },
 ] as const
 
 const TIME_CLASS_LABEL: Record<TimeClass, string> = {
@@ -175,6 +177,15 @@ export default function App() {
                 results={puzzles.results}
                 onResult={puzzles.record}
                 onGoToAnalysis={() => setView('analysis')}
+              />
+            )}
+            {view === 'progress' && (
+              <ProgressView
+                username={state.username}
+                timeClass={timeClass}
+                games={games}
+                analyses={engine.analyses}
+                puzzles={puzzles.results}
               />
             )}
           </section>

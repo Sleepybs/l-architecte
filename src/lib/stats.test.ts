@@ -124,6 +124,7 @@ describe('lossBreakdown', () => {
       game({ outcome: 'loss', result: 'timeout' }),
       game({ outcome: 'loss', result: 'checkmated' }),
       game({ outcome: 'win', result: 'win' }),
+      game({ outcome: 'loss', result: 'constructor' }), // valeur inattendue de l'API : ignorée
     ])
     expect(r[0]).toEqual({ kind: 'timeout', count: 2 })
     expect(r[1]).toEqual({ kind: 'checkmated', count: 1 })

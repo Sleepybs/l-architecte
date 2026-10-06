@@ -145,7 +145,7 @@ export const LOSS_LABELS: Record<LossKind, string> = {
 export function lossBreakdown(games: readonly Game[]): { kind: LossKind; count: number }[] {
   const counts: Record<LossKind, number> = { checkmated: 0, resigned: 0, timeout: 0, abandoned: 0 }
   for (const g of games) {
-    if (g.outcome === 'loss' && g.result in counts) counts[g.result as LossKind]++
+    if (g.outcome === 'loss' && Object.hasOwn(counts, g.result)) counts[g.result as LossKind]++
   }
   return (Object.keys(counts) as LossKind[])
     .map((kind) => ({ kind, count: counts[kind] }))

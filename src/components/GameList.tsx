@@ -80,7 +80,7 @@ function GameRow({ g, extra }: { g: Game; extra?: ReactNode }) {
         <div className="text-right">
           <div className={OUTCOME_CLASS[g.outcome]}>
             {OUTCOME_LABEL[g.outcome]}
-            {RESULT_DETAIL[g.result] && (
+            {Object.hasOwn(RESULT_DETAIL, g.result) && (
               <span className="text-xs text-muted"> · {RESULT_DETAIL[g.result]}</span>
             )}
           </div>
