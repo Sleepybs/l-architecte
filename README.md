@@ -32,6 +32,17 @@ Rien à installer, pas de compte, pas de serveur : tout se passe dans ton naviga
 
 Au retour, ta dernière recherche se relance toute seule et seuls les nouveaux mois sont téléchargés.
 
+### Installer l’appli sur ton téléphone
+
+L’Architecte est une PWA : elle s’installe comme une vraie appli, sans Play Store.
+
+- **Android** : ouvre le lien dans **Chrome**, puis touche **Installer l’appli** (en haut de la page)
+  ou menu ⋮ → **Installer l’application**.
+- **iPhone** : ouvre le lien dans **Safari**, bouton Partager → **Sur l’écran d’accueil**.
+
+L’appli s’ouvre alors en plein écran avec son icône, et reste utilisable hors ligne avec les parties
+déjà chargées.
+
 ## Comment les chiffres sont calculés
 
 - **Roque avant le coup 10** : roque joué à l’un de tes coups 1 à 9. Les parties finies avant ton

@@ -40,6 +40,9 @@
   }
   body {
     @apply bg-bg text-fg antialiased;
+    /* Appli installée en plein écran : on évite l'encoche et la barre de gestes du téléphone. */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
   }
 }
 

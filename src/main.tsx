@@ -11,3 +11,11 @@ createRoot(root).render(
     <App />
   </StrictMode>,
 )
+
+// Service worker (appli installable et utilisable hors ligne) : seulement en production,
+// pour ne pas garder en cache des fichiers de développement.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => undefined)
+  })
+}

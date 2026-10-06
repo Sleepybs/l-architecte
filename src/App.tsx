@@ -3,6 +3,7 @@ import { BlunderBadge } from './components/analysis/BlunderBadge'
 import { ClearDataButton } from './components/ClearDataButton'
 import { Dashboard } from './components/dashboard/Dashboard'
 import { GameList } from './components/GameList'
+import { InstallButton } from './components/InstallButton'
 import { LoadingStatus } from './components/LoadingStatus'
 import { SearchForm, type Search } from './components/SearchForm'
 import { ThemeToggle } from './components/ThemeToggle'
@@ -113,7 +114,10 @@ export default function App() {
         <h1 className="text-xl font-semibold tracking-tight">
           L’<span className="text-accent">Architecte</span>
         </h1>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <InstallButton />
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex flex-1 flex-col gap-6">
